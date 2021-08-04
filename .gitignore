@@ -2,4 +2,5 @@ apikey.txt
 email.txt
 *.o
 main
+*.json
 

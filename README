@@ -1,0 +1,23 @@
+### README ###
+
+This project is going to be a dashboard/service for getting prices of crypto 
+currencies. 
+
+My initial plan for this project was to just create an email service that 
+would send me an email at the end of the day for the OHLCV which means
+"Open High Low Close Volume." Then I thought about what would be missing from 
+the report, and the daily average was the first thing that came to mind.
+
+To solve the problem of getting the daily average, making a program to run as 
+a daemon process to grab data from an API and store it in a database is the 
+easiest solution that comes to mind. This database will have procedures to grab
+the average value and one to also purge the data that passes the day expiration
+period (since I only want the daily average).
+
+So the daemon process will be programmed in C to make it lightweight. The email
+program will be in python so that expandability will be much easier. If I want
+to expand to a website with graphs in the future, it will be much easier to 
+build it in python compared to C.
+
+
+---LunarCRUSH API key = lwak88n3v8ffborjocso8w ---

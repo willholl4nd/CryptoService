@@ -1,6 +1,8 @@
 apikey.txt
 email.txt
-*.o
-main
 *.json
 
+# Ignore the binary and object files as well as the backups
+backup/*
+obj
+bin

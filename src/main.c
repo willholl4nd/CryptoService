@@ -57,18 +57,20 @@ double grabPrice(char *fileName) {
         json_object *jso = json_object_from_file(actFilename);
         if(jso == NULL) {
                 //Print error and save file to backup folder
-                fprintf(stderr, "ERROR: Jso obj is NULL\nFailed to open json_object from file %s\n", fileName);
+                fprintf(stderr, "ERROR: Failed to open json_object from file %s\n", fileName);
                 moveJSONFile(fileName);
+                json_object_put(jso);
                 exit(1);
         }
 
         //Get data object
-        json_object *data = json_object_new_object();
-        json_object_object_get_ex(jso, "data", &data);
-        if(data == NULL) {
+        json_object *data = NULL;
+        int res = json_object_object_get_ex(jso, "data", &data);
+        if(res == 0) {
                 //Print error and save file to backup folder
                 fprintf(stderr, "ERROR: Data obj is NULL\n");
                 moveJSONFile(fileName);
+                json_object_put(jso);
                 exit(1);
         }
 
@@ -78,18 +80,23 @@ double grabPrice(char *fileName) {
                 //Print error and save file to backup folder
                 fprintf(stderr, "ERROR: Arr obj is NULL\n");
                 moveJSONFile(fileName);
+                json_object_put(jso);
                 exit(1);
         }
 
-        json_object *price = json_object_new_object();
-        json_object_object_get_ex(arr, "price", &price);
-        if(price == NULL) {
+        //Grabs the price of the cryptocurrency
+        json_object *price = NULL;
+        res = json_object_object_get_ex(arr, "price", &price);
+        if(res == 0) {
                 //Print error and save file to backup folder
                 fprintf(stderr, "ERROR: Price obs is NULL\n");
                 moveJSONFile(fileName);
+                json_object_put(jso);
                 exit(1);
         }
         double p = json_object_get_double(price);
+
+        json_object_put(jso);
         return p;
 }
 
@@ -322,7 +329,7 @@ void deleteDataFromTables(MYSQL *conn) {
         free(q4);
 }
 
-char *APIKeyGrab(char *filename) {
+void APIKeyGrab(char *filename, char *output) {
         FILE *f = fopen(filename, "r");
         if(f == NULL) {
                 fprintf(stderr, "ERROR: Failed to retrieve the API key\n");
@@ -339,8 +346,8 @@ char *APIKeyGrab(char *filename) {
         ret = strtok(ret, del);
         del = "=";
         strtok(ret, del);
-        char *token = strtok(NULL, del);
-        return token;
+        strcpy(output, strtok(NULL, del));
+        free(ret);
 }
 
 void constructEmail(struct priceAvg avgs, char *emailAddress) {
@@ -380,13 +387,16 @@ int main(int argc, char **argv) {
         char *emailAddress = argv[1];
 
         char *APIKeyFileName = "apikey.txt";
-        char *APIKey = APIKeyGrab(APIKeyFileName);
+        char *BTCFileName = "BTCresp.json";
+        char *ETHFileName = "ETHresp.json";
+
+        char APIKey[128];
+        APIKeyGrab(APIKeyFileName, APIKey);
+
         char BTCURL[256];
         sprintf(BTCURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=BTC", APIKey);
         char ETHURL[256];
         sprintf(ETHURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=ETH", APIKey);
-        char *BTCFileName = "BTCresp.json";
-        char *ETHFileName = "ETHresp.json";
 
         runCurlRequest(BTCURL, BTCFileName);
         runCurlRequest(ETHURL, ETHFileName);
@@ -394,9 +404,8 @@ int main(int argc, char **argv) {
         double BTCPrice = grabPrice(BTCFileName);
         double ETHPrice = grabPrice(ETHFileName);
 
-        MYSQL *mysql = mysql_init(NULL);
-        MYSQL *connection = mysql_real_connect(mysql, "localhost", "root", "asdf1234", "crypto", 3306, NULL, 0);
-        if(connection == NULL) {
+        MYSQL *connection = mysql_init(NULL);
+        if(mysql_real_connect(connection, "localhost", "root", "asdf1234", "crypto", 3306, NULL, 0) == NULL) {
                 fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
                 exit(1);
         }
@@ -412,6 +421,7 @@ int main(int argc, char **argv) {
         } else {
                 insert(connection, ETHPrice, BTCPrice);
         }
+        mysql_close(connection);
 
         return 0;
 }

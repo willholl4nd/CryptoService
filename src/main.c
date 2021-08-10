@@ -12,12 +12,38 @@
 #include <mariadb/mysql.h>
 
 /**
+ * Holds the pricing information for ETH and BTC when the email 
+ * is being prepared.
+ */
+struct priceAvg {
+        double ETHAvg;
+        double ETHHigh;
+        double ETHLow;
+        double ETHEnd;
+        double BTCAvg;
+        double BTCHigh;
+        double BTCLow;
+        double BTCEnd;
+};
+
+/**
  * This is the struct that will hold all of the curl
  * request data, along with the size of the request.
  */
 struct curl_data {
         char *data;
         size_t size;
+};
+
+/**
+ * This struct contains the contents of the project.json
+ */
+struct project_json {
+        char *apiKey;
+        char *database;
+        char *username;
+        char *password;
+        int port;
 };
 
 /**
@@ -197,21 +223,6 @@ void insert(MYSQL *conn, double ETHPrice, double BTCPrice) {
 }
 
 /**
- * Holds the pricing information for ETH and BTC when the email 
- * is being prepared.
- */
-struct priceAvg {
-        double ETHAvg;
-        double ETHHigh;
-        double ETHLow;
-        double ETHEnd;
-        double BTCAvg;
-        double BTCHigh;
-        double BTCLow;
-        double BTCEnd;
-};
-
-/**
  * The function that is used to grab min, max, and avg of the 
  * database tables for ETH and BTC.
  */
@@ -378,6 +389,83 @@ void constructEmail(struct priceAvg avgs, char *emailAddress) {
         system(cmd);
 }
 
+void strzcpy(char *dest, const char* src, size_t len) {
+        strncpy(dest, src, len);
+        dest[len] = '\0';
+}
+
+struct project_json projectSettings(char *fileName) {
+
+        json_object *jso = json_object_from_file(fileName);
+        if(jso == NULL) {
+                //Print error and save file to backup folder
+                fprintf(stderr, "ERROR: Failed to open json_object from file %s\n", fileName);
+                json_object_put(jso);
+                exit(1);
+        }
+
+        json_object *apikey = NULL;
+        json_object_object_get_ex(jso, "APIKey", &apikey);
+        if(apikey == NULL) {
+                fprintf(stderr, "ERROR: apikey obj is NULL\n");
+                json_object_put(jso);
+                exit(1);
+        }
+        const char *tempKey = json_object_get_string(apikey);
+        
+        json_object *database = NULL;
+        json_object_object_get_ex(jso, "Database", &database);
+        if(database == NULL) {
+                fprintf(stderr, "ERROR: database obj is NULL\n");
+                json_object_put(jso);
+                exit(1);
+        }
+        const char *tempDatabase = json_object_get_string(database);
+
+        json_object *username = NULL;
+        json_object_object_get_ex(jso, "Username", &username);
+        if(username == NULL) {
+                fprintf(stderr, "ERROR: username obj is NULL\n");
+                json_object_put(jso);
+                exit(1);
+        }
+        const char *tempUsername = json_object_get_string(username);
+
+        json_object *password = NULL;
+        json_object_object_get_ex(jso, "Password", &password);
+        if(password == NULL) {
+                fprintf(stderr, "ERROR: password obj is NULL\n");
+                json_object_put(jso);
+                exit(1);
+        }
+        const char *tempPassword = json_object_get_string(password);
+
+        json_object *port = NULL;
+        json_object_object_get_ex(jso, "Port", &port);
+        if(port == NULL) {
+                fprintf(stderr, "ERROR: port obj is NULL\n");
+                json_object_put(jso);
+                exit(1);
+        }
+
+        int tempPort = json_object_get_int(port);
+
+        struct project_json ret = {.port = tempPort};
+        
+        ret.apiKey = calloc(strlen(tempKey)+1, sizeof(char));
+        ret.database = calloc(strlen(tempDatabase)+1, sizeof(char));
+        ret.username = calloc(strlen(tempUsername)+1, sizeof(char));
+        ret.password = calloc(strlen(tempPassword)+1, sizeof(char));
+
+        strzcpy(ret.apiKey, tempKey, strlen(tempKey));
+        strzcpy(ret.database, tempDatabase, strlen(tempDatabase));
+        strzcpy(ret.username, tempUsername, strlen(tempUsername));
+        strzcpy(ret.password, tempPassword, strlen(tempPassword));
+
+        json_object_put(jso);
+        return ret;
+}
+
 int main(int argc, char **argv) {
         if(argc < 2) {
                 fprintf(stderr, "ERROR: Failed to find email address to email\n"
@@ -386,17 +474,15 @@ int main(int argc, char **argv) {
         }
         char *emailAddress = argv[1];
 
-        char *APIKeyFileName = "apikey.txt";
         char *BTCFileName = "BTCresp.json";
         char *ETHFileName = "ETHresp.json";
+        char *projectSettingFileName = "project.json";
 
-        char APIKey[128];
-        APIKeyGrab(APIKeyFileName, APIKey);
-
+        struct project_json pj = projectSettings(projectSettingFileName);
         char BTCURL[256];
-        sprintf(BTCURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=BTC", APIKey);
+        sprintf(BTCURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=BTC", pj.apiKey);
         char ETHURL[256];
-        sprintf(ETHURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=ETH", APIKey);
+        sprintf(ETHURL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=ETH", pj.apiKey);
 
         runCurlRequest(BTCURL, BTCFileName);
         runCurlRequest(ETHURL, ETHFileName);
@@ -405,7 +491,8 @@ int main(int argc, char **argv) {
         double ETHPrice = grabPrice(ETHFileName);
 
         MYSQL *connection = mysql_init(NULL);
-        if(mysql_real_connect(connection, "localhost", "root", "asdf1234", "crypto", 3306, NULL, 0) == NULL) {
+        if(mysql_real_connect(connection, NULL, pj.username, pj.password, 
+                                pj.database, pj.port, NULL, 0) == NULL) {
                 fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
                 exit(1);
         }
@@ -421,7 +508,13 @@ int main(int argc, char **argv) {
         } else {
                 insert(connection, ETHPrice, BTCPrice);
         }
+
+        //Final steps to clean up memory
         mysql_close(connection);
+        free(pj.apiKey);
+        free(pj.database);
+        free(pj.username);
+        free(pj.password);
 
         return 0;
 }

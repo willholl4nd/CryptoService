@@ -18,7 +18,7 @@ ${OBJS}: ${SRCS}
 	${CC} ${CFLAGS} $^ -c -o $@ 
 
 val: ${BINS}
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$^ 
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$^ s
 	
 clean:
 	rm ${OBJS} ${BINS}

@@ -1,6 +1,7 @@
 apikey.txt
 email.txt
 *.json
+!project.json
 
 # Ignore the binary and object files as well as the backups
 backups/*

@@ -4,5 +4,5 @@ email.txt
 
 # Ignore the binary and object files as well as the backups
 backup/*
-obj
-bin
+obj/*
+bin/*

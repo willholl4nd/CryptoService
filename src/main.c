@@ -1,56 +1,5 @@
-#include <curl/curl.h>
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <json-c/json_util.h>
-#include <json-c/json_object.h>
-#include <json-c/json_util.h>
-#include <json-c/arraylist.h>
-#include <mariadb/mysql.h>
+#include "main.h"
 
-/**
- * Holds the pricing information for ETH and BTC when the email 
- * is being prepared.
- */
-struct priceAvg {
-        double ETHAvg;
-        double ETHHigh;
-        double ETHLow;
-        double ETHEnd;
-        double BTCAvg;
-        double BTCHigh;
-        double BTCLow;
-        double BTCEnd;
-};
-
-/**
- * This is the struct that will hold all of the curl
- * request data, along with the size of the request.
- */
-struct curl_data {
-        char *data;
-        size_t size;
-};
-
-/**
- * This struct contains the contents of the project.json
- */
-struct project_json {
-        char *apiKey;
-        char *database;
-        char *username;
-        char *password;
-        int port;
-};
-
-/**
- * Moves the current curl files that hold the jsons
- * and moves them to the backups folder for viewing later
- * to see what parsing error there was.
- */
 void moveJSONFile(char *fileName) {
         char actFilename[512];
         sprintf(actFilename, "./%s", fileName);
@@ -72,11 +21,6 @@ void moveJSONFile(char *fileName) {
         }
 }
 
-/**
- * Uses the json library to parse the json files from the 
- * curl response to grab the price information from the two
- * crypto currencies: BTC and ETH.
- */
 double grabPrice(char *fileName) {
         char actFilename[256];
         sprintf(actFilename, "./%s", fileName);
@@ -126,11 +70,6 @@ double grabPrice(char *fileName) {
         return p;
 }
 
-/**
- * This is the function that is called every time the curl_easy_perform()
- * is called. It ensures that the data is being saved despite the size of 
- * the data that is sent back in response from our call to the API.
- */
 size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
         size_t realsize = size * nmemb;
 
@@ -153,9 +92,6 @@ size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *user
         return realsize;
 }
 
-/**
- * Handles the curl requests of each cryptocurrency and saves to their respective file.
- */
 void runCurlRequest(char *URL, char *fileName) {
         CURL *c = curl_easy_init();
         if (c != NULL) {
@@ -194,9 +130,6 @@ void runCurlRequest(char *URL, char *fileName) {
         }
 }
 
-/**
- * Inserts the prices of ETH and BTC into their respective database table.
- */
 void insert(MYSQL *conn, double ETHPrice, double BTCPrice) {
         char *query1 = calloc(64, sizeof(char));
         sprintf(query1, "insert into ETH_prices values (0,%f);", ETHPrice);
@@ -222,10 +155,6 @@ void insert(MYSQL *conn, double ETHPrice, double BTCPrice) {
         free(query2);
 }
 
-/**
- * The function that is used to grab min, max, and avg of the 
- * database tables for ETH and BTC.
- */
 double DBfetch(MYSQL *conn, char *query) {
         double ret;
 
@@ -242,10 +171,6 @@ double DBfetch(MYSQL *conn, char *query) {
         return ret;
 }
 
-/**
- * Inserts data into the database tables and requests the 
- * information for the daily email.
- */
 struct priceAvg insertAndHLA(MYSQL *conn, double ETHPrice, double BTCPrice) {
         char *query1 = calloc(64, sizeof(char));
         sprintf(query1, "insert into ETH_prices values (0,%f);", ETHPrice);
@@ -284,10 +209,6 @@ struct priceAvg insertAndHLA(MYSQL *conn, double ETHPrice, double BTCPrice) {
         return ret;
 }
 
-/**
- * Deletes all of the data from the database tables at the 
- * end of the day to get fresh data for the next day.
- */
 void deleteDataFromTables(MYSQL *conn) {
         char *q1 = calloc(64, sizeof(char));
         sprintf(q1, "delete from ETH_prices");
@@ -338,27 +259,6 @@ void deleteDataFromTables(MYSQL *conn) {
                 exit(1);
         }
         free(q4);
-}
-
-void APIKeyGrab(char *filename, char *output) {
-        FILE *f = fopen(filename, "r");
-        if(f == NULL) {
-                fprintf(stderr, "ERROR: Failed to retrieve the API key\n");
-                fclose(f);
-                exit(1);
-        }
-
-        char *ret = calloc(128, sizeof(char));
-        fgets(ret, 128, f);
-        fclose(f);
-
-        //Grabs the API key past the '=' sign
-        char *del = "\n";
-        ret = strtok(ret, del);
-        del = "=";
-        strtok(ret, del);
-        strcpy(output, strtok(NULL, del));
-        free(ret);
 }
 
 void constructEmail(struct priceAvg avgs, char *emailAddress) {
@@ -466,6 +366,36 @@ struct project_json projectSettings(char *fileName) {
         return ret;
 }
 
+void mysqlStuff(MYSQL *connection, struct project_json pj, double ETHPrice, double BTCPrice, char *email) {
+        if(mysql_real_connect(connection, NULL, pj.username, pj.password, 
+                                pj.database, pj.port, NULL, 0) == NULL) {
+                fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
+                exit(1);
+        }
+
+        time_t now = time(0);
+        struct tm *timeinfo = localtime(&now);
+        if(timeinfo->tm_hour == 0 && timeinfo->tm_min == 0) {
+                struct priceAvg data = insertAndHLA(connection, ETHPrice, BTCPrice);
+                deleteDataFromTables(connection);
+
+                constructEmail(data, email);
+
+        } else {
+                insert(connection, ETHPrice, BTCPrice);
+        }
+}
+
+void freeMemory(MYSQL *conn, struct project_json pj) {
+        //Final steps to clean up memory
+        mysql_close(conn);
+
+        free(pj.apiKey);
+        free(pj.database);
+        free(pj.username);
+        free(pj.password);
+}
+
 int main(int argc, char **argv) {
         if(argc < 2) {
                 fprintf(stderr, "ERROR: Failed to find email address to email\n"
@@ -491,30 +421,8 @@ int main(int argc, char **argv) {
         double ETHPrice = grabPrice(ETHFileName);
 
         MYSQL *connection = mysql_init(NULL);
-        if(mysql_real_connect(connection, NULL, pj.username, pj.password, 
-                                pj.database, pj.port, NULL, 0) == NULL) {
-                fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
-                exit(1);
-        }
-
-        time_t now = time(0);
-        struct tm *timeinfo = localtime(&now);
-        if(timeinfo->tm_hour == 0 && timeinfo->tm_min == 0) {
-                struct priceAvg avgs = insertAndHLA(connection, ETHPrice, BTCPrice);
-                deleteDataFromTables(connection);
-
-                constructEmail(avgs, emailAddress);
-                
-        } else {
-                insert(connection, ETHPrice, BTCPrice);
-        }
-
-        //Final steps to clean up memory
-        mysql_close(connection);
-        free(pj.apiKey);
-        free(pj.database);
-        free(pj.username);
-        free(pj.password);
-
+        mysqlStuff(connection, pj, ETHPrice, BTCPrice, emailAddress);
+        freeMemory(connection, pj);
+        
         return 0;
 }

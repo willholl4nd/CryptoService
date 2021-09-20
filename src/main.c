@@ -370,6 +370,7 @@ void mysqlStuff(MYSQL *connection, struct project_json pj, double ETHPrice, doub
         if(mysql_real_connect(connection, NULL, pj.username, pj.password, 
                                 pj.database, pj.port, NULL, 0) == NULL) {
                 fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
+                freeMemory(connection, pj);
                 exit(1);
         }
 

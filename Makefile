@@ -11,6 +11,8 @@ BINS = $(patsubst %,${BIN}/%,${TARGET})
 OBJS = $(patsubst %,${OBJ}/%.o,${TARGET})
 SRCS = $(patsubst %,${SRC}/%.c,${TARGET})
 
+EMAIL = test
+
 ${BINS}: ${OBJS}
 	${CC} ${CFLAGS} $^ -o $@ ${LIB}
 
@@ -18,7 +20,7 @@ ${OBJS}: ${SRCS}
 	${CC} ${CFLAGS} $^ -c -o $@ 
 
 val: ${BINS}
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$^ s
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$^ ${EMAIL}
 	
 clean:
 	rm ${OBJS} ${BINS}

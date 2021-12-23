@@ -1,6 +1,9 @@
 {
         "APIKey": "lwak88n3v8ffborjocso8w",
         "Database": "crypto",
+        "Symbols": ["ETH", "BTC"],
+        "Tables": ["ETH_data", "BTC_data"],
+        "Columns": ["price", "price"],
         "Username": "root",
         "Password": "asdf1234",
         "Port": 3306  

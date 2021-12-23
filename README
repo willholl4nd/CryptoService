@@ -19,3 +19,38 @@ program will be in python so that expandability will be much easier. If I want
 to expand to a website with graphs in the future, it will be much easier to 
 build it in python compared to C.
 
+---Future plans---
+If I were to expand this to keep track of the entire weeks worth of data, that 
+would be 10,080 data points assuming that each curl request worked. That 
+doesn't seem to be that big of a deal storage wise. I'm more worried about the 
+SQL requests that I would have craft with datetime. 
+
+Components and their use: 
+- curl.cpp: Handles the curl request and the storage of the API response in a 
+json file. 
+
+- email.cpp: This file will deal with the crafting of the email and sending that
+email to the dedicated email passed in as command line arguments.
+
+- graph.cpp: This file will be what creates the graph from the database 
+information.
+
+- json.cpp: This file does all of the json parsing that is needed to grab 
+the data from the API response, as well as the project information json.
+
+- main.cpp: This is where the program will start and control the flow.
+
+- mysql.cpp: We will handle all of the SQL requests here.
+
+
+
+
+
+
+###IMPORTANT INSTALLATION INFO###
+Using brew, install:
+mariadb
+curl
+json-c
+crontab
+libmgl

@@ -1,26 +1,31 @@
-CC = gcc
+CC = g++
 CFLAGS = -Wall -Wextra -g
-LIB = -lcurl -ljson-c -lmariadb
+LIB = -lcurl -ljson-c -lmariadb -lmgl
 SRC = src
 OBJ = obj
 BIN = bin
 
-TARGET = main
+TARGET = bin/main
+FILES = main curl email json mysql graph 
 
-BINS = $(patsubst %,${BIN}/%,${TARGET})
-OBJS = $(patsubst %,${OBJ}/%.o,${TARGET})
-SRCS = $(patsubst %,${SRC}/%.c,${TARGET})
+OBJS = $(patsubst %,%.o,${FILES})
+OBJECTS = $(patsubst %,${OBJ}/%.o,${FILES})
+SRCS = $(wildcard ${SRC}/*.cpp)
 
 EMAIL = test
 
-${BINS}: ${OBJS}
-	${CC} ${CFLAGS} $^ -o $@ ${LIB}
+.PHONY:all
 
-${OBJS}: ${SRCS}
-	${CC} ${CFLAGS} $^ -c -o $@ 
+all: $(OBJS) $(TARGET)
+
+${OBJS}: %.o: $(SRC)/%.cpp
+	${CC} ${CFLAGS} -c $< -o $(OBJ)/$@
+
+${TARGET}: ${OBJS}
+	${CC} ${CFLAGS} $(OBJECTS) -o $(TARGET) ${LIB}
 
 val: ${BINS}
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./$^ ${EMAIL}
 	
 clean:
-	rm ${OBJS} ${BINS}
+	rm ${OBJECTS} ${TARGET}

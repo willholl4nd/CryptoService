@@ -56,6 +56,7 @@ void JsonService::moveJSONFile(char *filename) {
 };
 
 double JsonService::grabPrice(char *filename) {
+    //The first json_object from the file
     char actFilename[256];
     sprintf(actFilename, "./%s", filename);
     json_object *jso = json_object_from_file(actFilename);
@@ -98,8 +99,10 @@ double JsonService::grabPrice(char *filename) {
         json_object_put(jso);
         exit(1);
     }
+    //The price from the json file
     double p = json_object_get_double(price);
 
+    //Free the initial json_object 
     json_object_put(jso);
     return p;
 };
@@ -230,6 +233,7 @@ project_json JsonService::projectSettings(char *filename) {
 
     int tempPort = json_object_get_int(port);
 
+    //Allocates and stores all of the information
     project_json ret = {.symbols = tempsymbols, .tables = temptables, 
         .columns = tempcolumns, .port = tempPort, .tableCount = tablelength};
 

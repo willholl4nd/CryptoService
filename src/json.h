@@ -13,23 +13,31 @@ class JsonService {
 
         /**
          * Uses the json library to parse the json files from the 
-         * curl response to grab the price information from the two
-         * crypto currencies: BTC and ETH.
+         * curl response to grab the price information.
+         * @params 
+         * filename: the file where the price information is stored from the 
+         * curl request
+         * @return the price that was in the file
          */
         double grabPrice(char *filename);
 
         /**
          * Getter for project_json
+         * @return the project_json struct
          */
         project_json getProject_json();
 
         /**
-         * Kinda does the thing
+         *  The constructor that stores the filename 
+         *  and runs the function that grabs the project 
+         *  settings
+         *  @params
+         *  filename: the name of the file where the project settings are stored
          */
         JsonService(char *filename);
 
         /**
-         * Kinda destroys the thing
+         * Frees all of the memory allocated by the project_json struct 
          */
         ~JsonService();
     private:
@@ -41,6 +49,10 @@ class JsonService {
         /**
          * Does a proper copy from one character pointer to the next and adds 
          * and null-terminating character to the end
+         * @params
+         * dest: the pointer to where we are copying data to
+         * str: the pointer where we are copying from
+         * len: the number of bytes that we are copying
          */
         void strzcpy(char *dest, const char* src, size_t len);
 
@@ -48,11 +60,15 @@ class JsonService {
          * Moves the current curl files that hold the jsons
          * and moves them to the backups folder for viewing later
          * to see what parsing error there was.
+         * @params
+         * filename: the file of the curl request data
          */
         void moveJSONFile(char *filename);
 
         /**
          * Grabs the mysql database information ie. login, password, port, and apikey
+         * @params: the file that stores the information of the project
+         * @return the parsed information in a struct 
          */
         project_json projectSettings(char *filename);
 };

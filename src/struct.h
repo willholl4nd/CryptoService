@@ -23,10 +23,16 @@
  */
 typedef std::vector<double> cryptoPrices;
 
+
+/**
+ * Holds the calculate stats on the cryptocurrency of interest along 
+ * with the dataset
+ */
 typedef struct {
     cryptoPrices prices;
     double max, min, avg, start, end;
 } cryptoInfo;
+
 
 /**
  * This struct contains the contents of the project.json
@@ -42,6 +48,7 @@ typedef struct {
     int port; //The port on which the database is running
     std::size_t tableCount; //The number of tables we are operating on
 } project_json;
+
 
 /**
  * This is the struct that will hold all of the curl

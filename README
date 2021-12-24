@@ -20,10 +20,14 @@ to expand to a website with graphs in the future, it will be much easier to
 build it in python compared to C.
 
 ---Future plans---
-If I were to expand this to keep track of the entire weeks worth of data, that 
-would be 10,080 data points assuming that each curl request worked. That 
-doesn't seem to be that big of a deal storage wise. I'm more worried about the 
-SQL requests that I would have craft with datetime. 
+-Add support for multiple email addresses
+-Add support for email addresses inside the project json 
+-Add more stats (median, standard deviation, variance, etc)
+-Add ability to choose number of days the stats are run on, ex. 5-day average, 
+1-month average 
+-List supported cryptocurrencies that can be added
+-Add database layout
+
 
 Components and their use: 
 - curl.cpp: Handles the curl request and the storage of the API response in a 

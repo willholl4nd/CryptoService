@@ -43,7 +43,21 @@ class Service {
         CurlService cs;
 
         //METHODS
+
+        /**
+         * Calculates the average, high, low, start and end prices of 
+         * the current cryptocurrency
+         * @params
+         * c: the entire days worth of data to be worked on 
+         */
         void calculateInfo(cryptoInfo *c);
+
+        /**
+         * Finds the average of the entire data set using vector math
+         * @params 
+         * p: the prices for the day 
+         * @return the average for the day
+         */
         double findAvg(cryptoPrices p);
 
         /**
@@ -51,18 +65,24 @@ class Service {
          * filename is the project.json file 
          * that holds all of the information about the mysql database 
          * and tables that we will be using.
+         * @params
+         * filename: the file that contains the project details
+         * email: the email supplied from the commandline
          */
         Service(char *filename, char *email);
 
 };
 
 Service::Service(char *filename, char *email) : js(filename), mq(js.getProject_json()), em(email){
+    //Grabs the current time
     time_t now = time(0);
     struct tm *timeinfo = localtime(&now);
     project_json pj = js.getProject_json();
 
+    //Creates an array that will store all of the current prices for this minute
     double currentPrice[pj.tableCount];
     char resp[] = "resp.json";
+    //Grabs all of the current prices and stores it
     for(size_t i = 0; i < pj.tableCount; i++) {
         int size = strlen(resp) + strlen(pj.tables[i]) + 1;
         char filename[size];
@@ -74,18 +94,15 @@ Service::Service(char *filename, char *email) : js(filename), mq(js.getProject_j
 
         cs.runCurlRequest(URL, filename);
         currentPrice[i] = js.grabPrice(filename);
-        memset(filename, 0, size);
+        memset(filename, 0, size); //Reset the memory
     }
 
+    //Checks if it is midnight
     if(timeinfo->tm_hour == 0 && timeinfo->tm_min == 0) {
-        //TODO grab all of the data from the database (done)
-        //and delete the database (done)
-        //and construct the graph (done)
-        //and make the email to send out (done)
-        cryptoInfo info[pj.tableCount];
+        cryptoInfo info[pj.tableCount]; //A table for all of the cryptocurrency info
         for(size_t i = 0; i < pj.tableCount; i++) {
+            mq.insertData(pj.tables[i], pj.columns[i], currentPrice[i]);
             info[i].prices = mq.selectPricesFromTable(pj.tables[i], pj.columns[i]);
-            info[i].prices.push_back(currentPrice[i]);
             calculateInfo(&info[i]);
 
             mq.deleteDataFromTables(pj.tables[i]);
@@ -101,12 +118,10 @@ Service::Service(char *filename, char *email) : js(filename), mq(js.getProject_j
     }
 };
 
-/**
- * Calculates all of the necessary information for the email
- */
 void Service::calculateInfo(cryptoInfo *c) {
     cryptoPrices p = c->prices;
     double min = p.at(0), max = p.at(0);
+    //Finds the min and max of the entire dataset
     for(size_t i = 0; i < p.size(); i++) {
         if (p.at(i) < min) {
             min = p.at(i);
@@ -121,10 +136,6 @@ void Service::calculateInfo(cryptoInfo *c) {
     c->end = p.back();
 };
 
-
-/**
- * Calculates the average of the entire dataset 
- */
 double Service::findAvg(cryptoPrices p) {
     if (p.empty())
         return 0;

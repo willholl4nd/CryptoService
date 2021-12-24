@@ -17,6 +17,7 @@ MysqlService::~MysqlService() {
 };
 
 void MysqlService::deleteDataFromTables(char *tablename) {
+    //Stores the query for the delete statement
     char *q1 = (char*)calloc(64, sizeof(char));
     sprintf(q1, "delete from %s where time_created < NOW() - INTERVAL 30 DAY;", tablename);
     int res1 = mysql_real_query(connection, q1, strlen(q1));
@@ -24,15 +25,18 @@ void MysqlService::deleteDataFromTables(char *tablename) {
     if(res1 != 0) {
         fprintf(stderr, "ERROR: Failed to perform data deletion\n");
         free(q1);
+        delete this;
         exit(1);
     }
     free(q1);
 };
 
 void MysqlService::insertData(char *tablename, char *columnname, double price) {
+    //Stores the query for the insert statement
     char *query = (char*)calloc(256, sizeof(char));
     sprintf(query, "insert into %s(%s) values (%f);", tablename, columnname, price);
     int result = mysql_real_query(connection, query, strlen(query));
+    //Checks for success
     if(result != 0) {       
         fprintf(stderr, "ERROR: Failed to execute query %s\n", query);
         free(query);
@@ -42,9 +46,11 @@ void MysqlService::insertData(char *tablename, char *columnname, double price) {
 };
 
 cryptoPrices MysqlService::selectPricesFromTable(char *tablename, char *columnname = (char*)"price") {
+    //Stores the query for the select statement
     char *query = (char*)calloc(256, sizeof(char));
     sprintf(query, "select %s from %s where time_created > NOW() - INTERVAL 1 DAY;", columnname, tablename);
     int res = mysql_real_query(connection, query, strlen(query));
+    //Checks for success
     if (res != 0) {
         fprintf(stderr, "ERROR: Failed to execute query %s\n", query);
         free(query);
@@ -55,6 +61,7 @@ cryptoPrices MysqlService::selectPricesFromTable(char *tablename, char *columnna
     MYSQL_RES *result = mysql_use_result(connection);
     cryptoPrices c;
     char **row;
+    //Loops through the result set and stores the price data 
     while((row = mysql_fetch_row(result)) != NULL) {
         double val = atof(row[0]);
         c.push_back(val);

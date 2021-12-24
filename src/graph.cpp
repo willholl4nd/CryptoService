@@ -10,7 +10,6 @@ GraphService::GraphService(int width, int height, char *title) : gr(0, width, he
     gr.Box();
     gr.Label('x', "Minutes", 0);
     gr.Label('y', "Prices", 0);
-    gr.Axis();
     this->title = title;
 };
 
@@ -36,6 +35,7 @@ void GraphService::constructGraph(cryptoPrices c) {
 
     gr.SetRanges(xx, yy);
     gr.Plot(xx, yy, "r"); //Plots the data
+    gr.Axis();
 
     //Create the file name
     char temp[strlen(title)+5];

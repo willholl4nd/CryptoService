@@ -23,6 +23,7 @@ void EmailService::constructEmail(cryptoInfo c[], project_json pj) {
 
     //The body of the email and the file it will be stored in
     char body[512*size];
+    memset(body, 0, size*512); //Reset the body array
     FILE *f = fopen(emailPath, "w");
     if(f == NULL){
         fprintf(stderr, "ERROR: Failed to open email.txt file\n");

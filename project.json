@@ -4,8 +4,8 @@
         "Symbols": ["ETH", "BTC"],
         "Tables": ["ETH_data", "BTC_data"],
         "Columns": ["price", "price"],
-        "Username": "root",
-        "Password": "asdf1234",
+        "Username": "cryptoservice",
+        "Password": "password",
         "Port": 3306  
 }
         

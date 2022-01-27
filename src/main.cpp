@@ -69,11 +69,11 @@ class Service {
          * filename: the file that contains the project details
          * email: the email supplied from the commandline
          */
-        Service(char *filename, char *email);
+        Service(char *filename, char **email, int numOfEmails);
 
 };
 
-Service::Service(char *filename, char *email) : js(filename), mq(js.getProject_json()), em(email){
+Service::Service(char *filename, char **email, int numOfEmails) : js(filename), mq(js.getProject_json()), em(email, numOfEmails){
     //Grabs the current time
     time_t now = time(0);
     struct tm *timeinfo = localtime(&now);
@@ -147,12 +147,14 @@ double Service::findAvg(cryptoPrices p) {
 
 int main(int argc, char **argv) {
     if(argc < 2) {
-        fprintf(stderr, "ERROR: Failed to find email address to email\n"
-                "Please supplement an email through program arguments\n");
+        fprintf(stderr, "ERROR: Failed to find email address(es) to email\n"
+                "Please supply email(s) through program arguments\n");
         return 1;
     }
-    char *emailAddress = argv[1];
-    Service s((char*)"project.json", emailAddress);
+    int numOfEmails = argc-1;
+    char *emails[numOfEmails];
+    for(int i = 0; i < numOfEmails; i++) emails[i] = argv[i+1];
+    Service s((char*)"project.json", emails, numOfEmails);
     
     return 0;
 }

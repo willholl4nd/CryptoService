@@ -6,7 +6,8 @@
 class EmailService {
     public:
         //FIELDS
-        char *email; 
+        char **email; 
+        int numOfEmails;
 
         //METHODS
 
@@ -15,7 +16,7 @@ class EmailService {
          * @params
          * email: the email address we are sending to
          */
-        EmailService(char *email);
+        EmailService(char **email, int numOfEmails);
 
         /**
          * Constructs the email, attaches the graph pictures, and sends the email

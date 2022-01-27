@@ -4,8 +4,9 @@
 #endif
 
 
-EmailService::EmailService(char *email) {
+EmailService::EmailService(char **email, int numOfEmails) {
     this->email = email;
+    this->numOfEmails = numOfEmails;
 };
 
 void EmailService::constructEmail(cryptoInfo c[], project_json pj) {
@@ -13,10 +14,6 @@ void EmailService::constructEmail(cryptoInfo c[], project_json pj) {
     //Path to the email file
     char emailPath[128];
     sprintf(emailPath, "./email.txt");
-
-    //The receiver of the email
-    char to[128];
-    sprintf(to, "%s", email);
 
     //Subject of the email
     char subject[] = "Daily Report: CryptoService";
@@ -42,15 +39,23 @@ void EmailService::constructEmail(cryptoInfo c[], project_json pj) {
     fprintf(f, "%s", body);
     fclose(f);
 
-    //Construct the command to be executed
-    char cmd[1024];
-    sprintf(cmd, "cat %s | mail -s \"%s\" %s", emailPath, subject, to);
-    for(size_t i = 0; i < size; i++) {
-        char temp[128];
-        sprintf(temp, " -A %s.png", pj.symbols[i]);
-        strncat(cmd, temp, strlen(temp));
-    }
+    for(int i = 0; i < this->numOfEmails; i++) {
+        //The receiver of the email
+        char to[128];
+        sprintf(to, "%s", email[i]);
 
-    //Execute the command
-    system(cmd);
+        //Construct the command to be executed
+        char cmd[1024];
+        sprintf(cmd, "cat %s | mail -s \"%s\" %s", emailPath, subject, to);
+        for(size_t i = 0; i < size; i++) {
+            char temp[128];
+            sprintf(temp, " -A %s.png", pj.symbols[i]);
+            strncat(cmd, temp, strlen(temp));
+        }
+
+        //Execute the command
+        system(cmd);
+
+
+    }
 };

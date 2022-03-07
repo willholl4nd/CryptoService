@@ -56,9 +56,10 @@ extra cryptocurrency tracking, and your own API_key to the free LunarCRUSH api
 
 ---Note---
 If you want to add more cryptocurrency tracking, you must create tables in a similar template 
-to those already created. Name of table and name of price column do not matter, but they must be the 
-same type, e.g. only one column, and same column type. You must do this before the prices will be tracked and 
-emailed out in a report.
+to those already created. Name of table and name of price column do not matter because 
+they are specified in the project json file, but they must be the same type. 
+You also need to have a column called "time_created" with a datetime type.
+You must do this before the prices will be tracked and emailed out in a report.
 
 
 ###IMPORTANT INSTALLATION INFO###

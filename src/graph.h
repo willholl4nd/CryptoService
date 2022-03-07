@@ -29,7 +29,7 @@ class GraphService {
          * @params
          * c: contains the data from the cryptocurrency
          */
-        void constructGraph(cryptoPrices c);
+        void constructGraph(cryptoInfo c);
 
     private: 
         //FIELDS

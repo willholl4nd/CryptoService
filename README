@@ -10,22 +10,19 @@ the report, and the daily average was the first thing that came to mind.
 
 To solve the problem of getting the daily average, making a program to run as 
 a daemon process to grab data from an API and store it in a database is the 
-easiest solution that comes to mind. This database will have procedures to grab
+easiest solution that came to mind. This database will have procedures to grab
 the average value and one to also purge the data that passes the day expiration
 period (since I only want the daily average).
 
-So the daemon process will be programmed in C to make it lightweight. The email
-program will be in python so that expandability will be much easier. If I want
-to expand to a website with graphs in the future, it will be much easier to 
-build it in python compared to C.
-
 ---Future plans---
--Add support for multiple email addresses (Done)
+-Add support for multiple email addresses via command-line (Done)
+-Correct plotting issues (Done)
 -Add ability to control what time of day email is sent out from project.json
 -Add support for email addresses inside the project json 
 -Add more stats (median, standard deviation, variance, etc)
 -Add ability to choose number of days the stats are run on, ex. 5-day average, 
 1-month average 
+-Create docker container for project
 -List supported cryptocurrencies that can be added
 -Add database layout
 
@@ -47,9 +44,20 @@ the data from the API response, as well as the project information json.
 
 - mysql.cpp: We will handle all of the SQL requests here.
 
+---Usage---
+1. Import the MySQL tables into local MySQL server from the crypto.sql file
+2. Compile the project using make
+3. Run the project with emails as command-line arguments (for now)
+4. Add "* * * * * cd /path/to/project && ./bin/main {email addresses here}" to run in crontab
+5. Add customizations to project.json file to include MySQL login information,
+extra cryptocurrency tracking, and your own API_key to the free LunarCRUSH api
 
 
-
+---Note---
+If you want to add more cryptocurrency tracking, you must create tables in a similar template 
+to those already created. Name of table and name of price column do not matter, but they must be the 
+same type, e.g. only one column, and same column type. You must do this before the prices will be tracked and 
+emailed out in a report.
 
 
 ###IMPORTANT INSTALLATION INFO###

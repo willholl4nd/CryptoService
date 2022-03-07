@@ -1,15 +1,15 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 #include "graph.h"
+#include <cmath>
 #endif
 
 
 GraphService::GraphService(int width, int height, char *title) : gr(0, width, height){
-    gr.NewFrame();
+    gr.SubPlot(1,1,0);
     gr.Title(title);
-    gr.Box();
-    gr.Label('x', "Minutes", 0);
-    gr.Label('y', "Prices", 0);
+    gr.SetPlotFactor(1.75);
+    gr.Box("", false);
     this->title = title;
 };
 
@@ -19,13 +19,13 @@ GraphService::~GraphService() {
 };
 
 
-void GraphService::constructGraph(cryptoPrices c) {
-    size_t size = c.size(); //The number of data points
+void GraphService::constructGraph(cryptoInfo c) {
+    size_t size = c.prices.size(); //The number of data points
     //Stores the x and y information in two arrays
     double y[size];
     double x[size];    
     for(size_t i = 0; i < size; i++) {
-        y[i] = c.at(i);
+        y[i] = c.prices.at(i);
         x[i] = i;
     }
 
@@ -35,7 +35,18 @@ void GraphService::constructGraph(cryptoPrices c) {
 
     gr.SetRanges(xx, yy);
     gr.Plot(xx, yy, "r"); //Plots the data
+
+    double diffX = size;
+    double diffY = c.max - c.min;
+    double stepX = diffX / 14;
+    double stepY = diffY / 10;
+
+    gr.SetTicks('y', stepY, 0, NAN, "");
+    gr.SetTicks('x', stepX, 0, NAN, "");
     gr.Axis();
+
+    gr.Label('x', "Time", 0, "value .25");
+    gr.Label('y', "Price", 0, "value .3");
 
     //Create the file name
     char temp[strlen(title)+5];

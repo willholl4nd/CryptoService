@@ -106,8 +106,8 @@ Service::Service(char *filename, char **email, int numOfEmails) : js(filename), 
             calculateInfo(&info[i]);
 
             mq.deleteDataFromTables(pj.tables[i]);
-            GraphService gs(2000, 1000, pj.symbols[i]);
-            gs.constructGraph(info[i].prices);
+            GraphService gs(2000, 1250, pj.symbols[i]);
+            gs.constructGraph(info[i]);
         }
         em.constructEmail(info, pj);
     } else {

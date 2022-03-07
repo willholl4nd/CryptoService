@@ -6,6 +6,8 @@
         "Columns": ["price", "price"],
         "Username": "cryptoservice",
         "Password": "password",
-        "Port": 3306  
+        "Port": 3306,
+        "Hour": 0,
+        "Minute": 0
 }
         

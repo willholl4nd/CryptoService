@@ -98,7 +98,7 @@ Service::Service(char *filename, char **email, int numOfEmails) : js(filename), 
     }
 
     //Checks if it is midnight
-    if(timeinfo->tm_hour == 0 && timeinfo->tm_min == 0) {
+    if(timeinfo->tm_hour == pj.hour && timeinfo->tm_min == pj.minute) {
         cryptoInfo info[pj.tableCount]; //A table for all of the cryptocurrency info
         for(size_t i = 0; i < pj.tableCount; i++) {
             mq.insertData(pj.tables[i], pj.columns[i], currentPrice[i]);

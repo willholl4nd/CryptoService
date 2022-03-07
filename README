@@ -1,7 +1,7 @@
 ### README ###
 
 This project is going to be a dashboard/service for getting prices of crypto 
-currencies. 
+currencies. This project will only be for Linux and macOS systems.
 
 My initial plan for this project was to just create an email service that 
 would send me an email at the end of the day for the OHLCV which means
@@ -17,7 +17,7 @@ period (since I only want the daily average).
 ---Future plans---
 -Add support for multiple email addresses via command-line (Done)
 -Correct plotting issues (Done)
--Add ability to control what time of day email is sent out from project.json
+-Add ability to control what time of day email is sent out from project.json (Done)
 -Add support for email addresses inside the project json 
 -Add more stats (median, standard deviation, variance, etc)
 -Add ability to choose number of days the stats are run on, ex. 5-day average, 
@@ -45,11 +45,12 @@ the data from the API response, as well as the project information json.
 - mysql.cpp: We will handle all of the SQL requests here.
 
 ---Usage---
-1. Import the MySQL tables into local MySQL server from the crypto.sql file
-2. Compile the project using make
-3. Run the project with emails as command-line arguments (for now)
-4. Add "* * * * * cd /path/to/project && ./bin/main {email addresses here}" to run in crontab
-5. Add customizations to project.json file to include MySQL login information,
+1. Make sure all packages listed below are installed and setup
+2. Import the MySQL tables into local MySQL server from the crypto.sql file
+3. Compile the project using make
+4. Run the project with emails as command-line arguments (for now)
+5. Add "* * * * * cd /path/to/project && ./bin/main {email addresses here}" to run in crontab
+6. Add customizations to project.json file to include MySQL login information,
 extra cryptocurrency tracking, and your own API_key to the free LunarCRUSH api
 
 
@@ -67,3 +68,4 @@ curl
 json-c
 crontab
 libmgl
+postfix

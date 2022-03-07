@@ -233,9 +233,34 @@ project_json JsonService::projectSettings(char *filename) {
 
     int tempPort = json_object_get_int(port);
 
+    //Grabs the value of the hour for the email
+    json_object *hour = NULL;
+    json_object_object_get_ex(jso, "Hour", &hour);
+    int tempHour = 0; //By default, at the start of a new day
+    if(hour != NULL) {
+        tempHour = json_object_get_int(hour);
+        if(tempHour > 23 || tempHour < 0) {
+            fprintf(stderr, "ERROR: Invalid hour value in project json\nFalling back to default\n");
+            tempHour = 0;
+        }
+    }
+
+    //Grabs the value of the minute for the email
+    json_object *minute = NULL;
+    json_object_object_get_ex(jso, "Minute", &minute);
+    int tempMinute = 0; //By default, at the start of an hour
+    if(minute != NULL) {
+        tempMinute = json_object_get_int(minute);
+        if(tempMinute > 59 || tempMinute < 0) {
+            fprintf(stderr, "ERROR: Invalid minute value in project json\nFalling back to default\n");
+            tempMinute = 0;
+        }
+    }
+    
     //Allocates and stores all of the information
     project_json ret = {.symbols = tempsymbols, .tables = temptables, 
-        .columns = tempcolumns, .port = tempPort, .tableCount = tablelength};
+        .columns = tempcolumns, .port = tempPort, .hour = tempHour,
+        .minute = tempMinute, .tableCount = tablelength};
 
     ret.apiKey = (char*)calloc(strlen(tempKey)+1, sizeof(char));
     ret.database = (char*)calloc(strlen(tempDatabase)+1, sizeof(char));

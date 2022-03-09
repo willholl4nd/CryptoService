@@ -12,6 +12,19 @@ JsonService::JsonService(char *filename) {
     this->pj = projectSettings(filename);
 };
 
+void JsonService::print_project_json(project_json pj) {
+    printf("API_key = %s\n", pj.apiKey);
+    printf("Database = %s\n", pj.database);
+    printf("Username = %s\n", pj.username);
+    printf("Password = %s\n", pj.password);
+    printf("Table count = %ld\n", pj.tableCount);
+    for(int i = 0; i < pj.tableCount; i++) 
+        printf("Symbol: %s, Table: %s, columns: %s\n", pj.symbols[i], pj.tables[i], pj.columns[i]);
+    printf("Email length = %ld\n", pj.emaillength);
+    for(int i = 0; i < pj.emaillength; i++) 
+        printf("Emails: %s\n", pj.emails[i]);
+}
+
 JsonService::~JsonService() {
     //Frees all of the memory for the project_json
     free(this->pj.apiKey);
@@ -26,6 +39,12 @@ JsonService::~JsonService() {
     free(this->pj.symbols);
     free(this->pj.tables);
     free(this->pj.columns);
+    if(pj.emaillength > 0) {
+        for(int i = 0; i < pj.emaillength; i++) {
+            free(this->pj.emails[i]);
+        }
+        free(this->pj.emails);
+    }
 };
 
 void JsonService::moveJSONFile(char *filename) {
@@ -257,10 +276,28 @@ project_json JsonService::projectSettings(char *filename) {
         }
     }
     
+
+    //Grabs all of the values from the "Emails" array in the json
+    json_object *emails = NULL;
+    json_object_object_get_ex(jso, "Emails", &emails);
+    size_t emaillength = 0;
+    char **tempemails = NULL;
+    if(emails != NULL) {
+        emaillength = json_object_array_length(emails);
+        tempemails = (char**)malloc(sizeof(char*) * emaillength);
+        for(size_t i = 0; i < emaillength; i++) {
+            json_object *temp = json_object_array_get_idx(emails, i);
+            int tempsize = json_object_get_string_len(temp);
+            tempemails[i] = (char*)calloc(tempsize+1, sizeof(char));
+            strzcpy(tempemails[i], json_object_get_string(temp), tempsize);
+        }
+    }
+
     //Allocates and stores all of the information
     project_json ret = {.symbols = tempsymbols, .tables = temptables, 
         .columns = tempcolumns, .port = tempPort, .hour = tempHour,
-        .minute = tempMinute, .tableCount = tablelength};
+        .minute = tempMinute, .emails = tempemails, .emaillength = emaillength, 
+        .tableCount = tablelength};
 
     ret.apiKey = (char*)calloc(strlen(tempKey)+1, sizeof(char));
     ret.database = (char*)calloc(strlen(tempDatabase)+1, sizeof(char));

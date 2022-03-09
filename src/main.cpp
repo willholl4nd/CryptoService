@@ -37,7 +37,6 @@ class Service {
 
     public:
         //FIELDS
-        JsonService js;
         EmailService em;
         MysqlService mq;
         CurlService cs;
@@ -66,19 +65,18 @@ class Service {
          * that holds all of the information about the mysql database 
          * and tables that we will be using.
          * @params
-         * filename: the file that contains the project details
+         * pj: the parsed project.json in object form
          * email: the email supplied from the commandline
          */
-        Service(char *filename, char **email, int numOfEmails);
+        Service(JsonService *js, project_json pj, char **email, int numOfEmails);
 
 };
 
-Service::Service(char *filename, char **email, int numOfEmails) : js(filename), mq(js.getProject_json()), em(email, numOfEmails){
+Service::Service(JsonService *js, project_json pj, char **email, int numOfEmails) : mq(pj), em(email, numOfEmails){
     //Grabs the current time
     time_t now = time(0);
     struct tm *timeinfo = localtime(&now);
-    project_json pj = js.getProject_json();
-
+    
     //Creates an array that will store all of the current prices for this minute
     double currentPrice[pj.tableCount];
     char resp[] = "resp.json";
@@ -93,7 +91,7 @@ Service::Service(char *filename, char **email, int numOfEmails) : js(filename), 
         sprintf(URL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=%s", pj.apiKey, pj.symbols[i]);
 
         cs.runCurlRequest(URL, filename);
-        currentPrice[i] = js.grabPrice(filename);
+        currentPrice[i] = js->grabPrice(filename);
         memset(filename, 0, size); //Reset the memory
     }
 
@@ -146,15 +144,25 @@ double Service::findAvg(cryptoPrices p) {
 
 
 int main(int argc, char **argv) {
-    if(argc < 2) {
+    JsonService js((char*)"project.json");
+    project_json pj = js.getProject_json();
+    if(argc < 2 && pj.emaillength < 1) {
         fprintf(stderr, "ERROR: Failed to find email address(es) to email\n"
-                "Please supply email(s) through program arguments\n");
+                "Please supply email(s) through program arguments or the project.json file\n");
         return 1;
     }
-    int numOfEmails = argc-1;
+
+    int numOfEmails = argc - 1;
     char *emails[numOfEmails];
-    for(int i = 0; i < numOfEmails; i++) emails[i] = argv[i+1];
-    Service s((char*)"project.json", emails, numOfEmails);
+    for(int i = 0; i < argc-1; i++) emails[i] = argv[i+1];
+
+    if(pj.emaillength > 0) {
+        for(int i = 0; i < pj.emaillength; i++) {
+            emails[i+numOfEmails] = pj.emails[i];
+        }
+        numOfEmails += pj.emaillength;
+    }
+    Service s(&js, pj, emails, numOfEmails);
     
     return 0;
 }

@@ -20,8 +20,7 @@ period (since I only want the daily average).
 -Add ability to control what time of day email is sent out from project.json (Done)
 -Add support for email addresses inside the project json 
 -Add more stats (median, standard deviation, variance, etc)
--Add ability to choose number of days the stats are run on, ex. 5-day average, 
-1-month average 
+-Add ability to choose number of days the stats are run on, ex. 5-day average, 1-month average 
 -Create docker container for project
 -List supported cryptocurrencies that can be added
 -Add database layout

@@ -48,6 +48,8 @@ typedef struct {
     int port; //The port on which the database is running
     int hour; //The hour which the email is sent out
     int minute; //The minute of the hour which the email is sent out
+    char **emails;
+    std::size_t emaillength;
     std::size_t tableCount; //The number of tables we are operating on
 } project_json;
 

@@ -27,6 +27,8 @@ class JsonService {
          */
         project_json getProject_json();
 
+        void print_project_json(project_json pj);
+
         /**
          *  The constructor that stores the filename 
          *  and runs the function that grabs the project 

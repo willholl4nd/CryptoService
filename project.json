@@ -7,7 +7,8 @@
         "Username": "cryptoservice",
         "Password": "password",
         "Port": 3306,
-        "Hour": 0,
-        "Minute": 0
+        "Hour": 19,
+        "Minute": 30,
+        "Emails": []
 }
         

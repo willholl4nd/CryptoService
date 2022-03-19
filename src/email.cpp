@@ -46,10 +46,10 @@ void EmailService::constructEmail(cryptoInfo c[], project_json pj) {
 
         //Construct the command to be executed
         char cmd[1024];
-        sprintf(cmd, "cat %s | mail -s \"%s\" %s", emailPath, subject, to);
+        sprintf(cmd, "cat %s | mutt -s \"%s\" %s", emailPath, subject, to);
         for(size_t i = 0; i < size; i++) {
             char temp[128];
-            sprintf(temp, " -A %s.png", pj.symbols[i]);
+            sprintf(temp, " -a %s.png", pj.symbols[i]);
             strncat(cmd, temp, strlen(temp));
         }
 

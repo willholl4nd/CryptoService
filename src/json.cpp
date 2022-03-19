@@ -14,6 +14,7 @@ JsonService::JsonService(char *filename) {
 
 void JsonService::print_project_json(project_json pj) {
     printf("API_key = %s\n", pj.apiKey);
+    printf("Hostame = %s\n", pj.hostname);
     printf("Database = %s\n", pj.database);
     printf("Username = %s\n", pj.username);
     printf("Password = %s\n", pj.password);
@@ -28,6 +29,7 @@ void JsonService::print_project_json(project_json pj) {
 JsonService::~JsonService() {
     //Frees all of the memory for the project_json
     free(this->pj.apiKey);
+    free(this->pj.hostname);
     free(this->pj.database);
     free(this->pj.username);
     free(this->pj.password);
@@ -152,6 +154,17 @@ project_json JsonService::projectSettings(char *filename) {
         exit(1);
     }
     const char *tempKey = json_object_get_string(apikey);
+
+    //Grabs the value of the hostname
+    json_object *hostname = NULL;
+    json_object_object_get_ex(jso, "Hostname", &hostname);
+    if(hostname == NULL) {
+        fprintf(stderr, "ERROR: hostname obj is NULL\n");
+        json_object_put(jso);
+        delete this;
+        exit(1);
+    }
+    const char *tempHostname = json_object_get_string(hostname);
 
     //Grabs the value of the name for the database
     json_object *database = NULL;
@@ -300,12 +313,14 @@ project_json JsonService::projectSettings(char *filename) {
         .tableCount = tablelength};
 
     ret.apiKey = (char*)calloc(strlen(tempKey)+1, sizeof(char));
+    ret.hostname = (char*)calloc(strlen(tempHostname)+1, sizeof(char));
     ret.database = (char*)calloc(strlen(tempDatabase)+1, sizeof(char));
     ret.username = (char*)calloc(strlen(tempUsername)+1, sizeof(char));
     ret.password = (char*)calloc(strlen(tempPassword)+1, sizeof(char));
 
     //Makes sure all of the characters are being stored properly
     strzcpy(ret.apiKey, tempKey, strlen(tempKey));
+    strzcpy(ret.hostname, tempHostname, strlen(tempHostname));
     strzcpy(ret.database, tempDatabase, strlen(tempDatabase));
     strzcpy(ret.username, tempUsername, strlen(tempUsername));
     strzcpy(ret.password, tempPassword, strlen(tempPassword));

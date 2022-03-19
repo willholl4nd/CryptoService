@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -std=c++17
 LIB = -lcurl -ljson-c -lmariadb -lmgl
 SRC = src
 OBJ = obj

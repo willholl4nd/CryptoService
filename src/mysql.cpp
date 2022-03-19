@@ -5,7 +5,7 @@
 
 MysqlService::MysqlService(project_json pj) {
     //Some type of error occurred
-    if(mysql_real_connect(this->connection, NULL, pj.username,
+    if(mysql_real_connect(this->connection, pj.hostname, pj.username,
                 pj.password, pj.database, pj.port, NULL, 0) == NULL) {
         fprintf(stderr, "ERROR: Failed to connect to mariadb server\n");
         exit(1);

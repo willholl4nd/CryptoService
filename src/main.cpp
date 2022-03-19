@@ -82,10 +82,11 @@ Service::Service(JsonService *js, project_json pj, char **email, int numOfEmails
     char resp[] = "resp.json";
     //Grabs all of the current prices and stores it
     for(size_t i = 0; i < pj.tableCount; i++) {
-        int size = strlen(resp) + strlen(pj.tables[i]) + 1;
+        int size = strlen(resp) + strlen(pj.tables[i]) + 20;
         char filename[size];
-        strcat(filename, pj.symbols[i]);
-        strcat(filename, resp);
+        sprintf(filename, "%s%s", pj.symbols[i], resp);
+        //strcat(filename, pj.symbols[i]);
+        //strcat(filename, resp);
 
         char URL[256];
         sprintf(URL, "https://api.lunarcrush.com/v2?data=assets&key=%s&symbol=%s", pj.apiKey, pj.symbols[i]);

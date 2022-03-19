@@ -19,9 +19,10 @@ period (since I only want the daily average).
 -Correct plotting issues (Done)
 -Add ability to control what time of day email is sent out from project.json (Done)
 -Add support for email addresses inside the project json  (Done)
+-Create docker container for project (Done)
 -Add more stats (median, standard deviation, variance, etc)
 -Add ability to choose number of days the stats are run on, ex. 5-day average, 1-month average 
--Create docker container for project
+-Make graph look prettier
 -List supported cryptocurrencies that can be added
 -Add database layout
 
@@ -69,3 +70,4 @@ json-c
 crontab
 libmgl
 postfix
+mailutils
